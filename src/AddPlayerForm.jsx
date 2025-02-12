@@ -19,14 +19,13 @@ function AddPlayerForm({ setPlayers }) {
       return;
     }
   
-    // ✅ Ensure proper request structure
+    
     const newPlayer = {
-      player: {
+
         name: name.trim(),
         breed: breed.trim(),
         status: status.trim(),
         imageUrl: imageUrl.trim(),
-      }
     };
   
     try {
@@ -49,7 +48,7 @@ function AddPlayerForm({ setPlayers }) {
       console.log("📢 API Response:", data);
   
       if (data.success && data.data && data.data.player) {
-        setPlayers(prev => [...prev, data.data.player]); // ✅ Add new player instantly
+        setPlayers(prev => [...prev, data.data.player]); 
         setSuccessMessage(`✅ Player "${data.data.player.name}" added successfully!`);
         setName("");
         setBreed("");
