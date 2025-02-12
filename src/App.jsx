@@ -1,54 +1,42 @@
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import ListOfPlayers from "./ListOfPlayers";
-import PlayerDetails from "./PlayerDetails";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { useState, useEffect } from "react";
+import Home from "./Home";
+import DetailsPage from "./DetailsPage";
 import AddPlayerForm from "./AddPlayerForm";
+
+const API_URL = "https://fsa-puppy-bowl.herokuapp.com/api/2302-ACC-PT-WEB-PT";
 
 function App() {
   const [players, setPlayers] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [teams, setTeams] = useState([]);
 
   useEffect(() => {
-    fetch("https://fsa-puppy-bowl.herokuapp.com/api/2206-CPU-RM-WEB-PT/players")
-      .then((response) => response.json())
-      .then((data) => {
-        setPlayers(data);
-      })
-      .catch((error) => {
-        console.error('Error fetching puppies:', error);
-      });
+    async function fetchData() {
+      try {
+        const playersRes = await fetch(`${API_URL}/players`);
+        const playersData = await playersRes.json();
+        if (playersData.success) setPlayers(playersData.data.players);
+
+        const teamsRes = await fetch(`${API_URL}/teams`);
+        const teamsData = await teamsRes.json();
+        if (teamsData.success) setTeams(teamsData.data.teams);
+
+        console.log("📢 Players Data in App:", playersData);
+        console.log("📢 Teams Data in App:", teamsData);
+      } catch (error) {
+        console.error("🚨 Error fetching data:", error);
+      }
+    }
+    fetchData();
   }, []);
-
-  const addPlayer = (player) => {
-    setPlayers([...players, player]);
-  };
-
-  const deletePlayer = (id) => {
-    setPlayers(players.filter(player => player.id !== id));
-  };
-
-  const filteredPlayers = players.filter(player => player.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
     <Router>
-      <div>
-        <h1>Puppy Bowl</h1>
-        <input 
-          type="text" 
-          placeholder="Search for a player"
-          onChange={(e) => setSearchQuery(e.target.value)} 
-        />
-        <AddPlayerForm addPlayer={addPlayer} />
-        <Switch>
-          <Route
-            exact
-            path="/"
-            render={() => (
-              <ListOfPlayers players={filteredPlayers} onDelete={deletePlayer} />
-            )}
-          />
-        </Switch>
-      </div>
+      <Routes>
+        <Route path="/" element={<Home players={players} teams={teams} />} />
+        <Route path="/players/:id" element={<DetailsPage />} />
+        <Route path="/add-player" element={<AddPlayerForm setPlayers={setPlayers} />} />
+      </Routes>
     </Router>
   );
 }
